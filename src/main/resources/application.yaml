@@ -20,3 +20,18 @@ spring:
         jdbc:
           time_zone: UTC
         order_updates: true
+
+logging:
+  structured:
+    format:
+      console: ecs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
