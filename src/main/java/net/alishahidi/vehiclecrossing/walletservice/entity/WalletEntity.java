@@ -1,8 +1,10 @@
 package net.alishahidi.vehiclecrossing.walletservice.entity;
 
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,7 +15,10 @@ import lombok.experimental.SuperBuilder;
 import net.alishahidi.vehiclecrossing.walletservice.entity.base.BaseEntity;
 
 @Entity
-@Table(name = "wallets")
+@Table(name = "wallets",
+        // Last line of defence: the database itself refuses a negative balance.
+        check = @CheckConstraint(name = "ck_wallets_balance_not_negative", constraint = "balance >= 0"),
+        uniqueConstraints = @UniqueConstraint(name = "uq_wallets_user_currency", columnNames = {"user_id", "currency"}))
 @Getter
 @Setter
 @SuperBuilder

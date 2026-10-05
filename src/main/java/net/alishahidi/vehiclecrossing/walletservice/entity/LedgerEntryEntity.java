@@ -1,5 +1,6 @@
 package net.alishahidi.vehiclecrossing.walletservice.entity;
 
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,7 +17,8 @@ import net.alishahidi.vehiclecrossing.walletservice.entity.enums.EntryDirection;
 
 
 @Entity
-@Table(name = "ledger_entries")
+@Table(name = "ledger_entries",
+        check = @CheckConstraint(name = "ck_ledger_balance_after_not_negative", constraint = "balance_after >= 0"))
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
