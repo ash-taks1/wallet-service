@@ -45,6 +45,7 @@ public class WalletService {
     TransactionRepository transactions;
     LedgerEntryRepository ledger;
     IdempotencyService idempotency;
+    TransactionEventPublisher events;
     WalletMapper walletMapper;
     TransactionMapper transactionMapper;
 
@@ -67,6 +68,7 @@ public class WalletService {
             TransactionEntity tx = transactions.save(newTransaction(TransactionType.DEPOSIT, walletId, amount,
                     idempotencyKey).status(TransactionStatus.COMPLETED).build());
             LedgerEntryEntity entry = ledger.save(LedgerEntryEntity.credit(tx, walletId, balanceAfter));
+            events.deposited(tx, wallet, balanceAfter);
             logApplied(tx, balanceAfter);
             return result(tx, entry, walletId);
         });
@@ -85,6 +87,7 @@ public class WalletService {
             long balanceAfter = wallet.debit(amount);
             TransactionEntity tx = transactions.save(builder.status(TransactionStatus.COMPLETED).build());
             LedgerEntryEntity entry = ledger.save(LedgerEntryEntity.debit(tx, walletId, balanceAfter));
+            events.withdrawn(tx, wallet, balanceAfter);
             logApplied(tx, balanceAfter);
             return result(tx, entry, walletId);
         });
@@ -128,6 +131,7 @@ public class WalletService {
             TransactionEntity tx = transactions.save(builder.status(TransactionStatus.COMPLETED).build());
             LedgerEntryEntity debit = ledger.save(LedgerEntryEntity.debit(tx, sourceWalletId, sourceBalanceAfter));
             ledger.save(LedgerEntryEntity.credit(tx, targetWalletId, targetBalanceAfter));
+            events.transferred(tx, source, sourceBalanceAfter, target, targetBalanceAfter);
             logApplied(tx, sourceBalanceAfter);
             return result(tx, debit, sourceWalletId);
         });

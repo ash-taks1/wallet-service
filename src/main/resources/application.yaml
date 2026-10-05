@@ -20,6 +20,16 @@ spring:
         jdbc:
           time_zone: UTC
         order_updates: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:wallet}
+    password: ${RABBITMQ_PASSWORD:wallet}
+    # Outbox relay marks an event published only after a broker confirm for a routed message.
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
 
 logging:
   structured:
@@ -38,6 +48,10 @@ management:
 
 wallet:
   currency: IRR
+  outbox:
+    poll-interval-ms: 100
+    batch-size: 100
+    confirm-timeout: 5s
   security:
     jwt:
       issuer: wallet-service
