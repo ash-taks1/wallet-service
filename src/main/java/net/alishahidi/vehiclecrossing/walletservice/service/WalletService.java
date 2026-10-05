@@ -44,6 +44,7 @@ public class WalletService {
     WalletRepository wallets;
     TransactionRepository transactions;
     LedgerEntryRepository ledger;
+    IdempotencyService idempotency;
     WalletMapper walletMapper;
     TransactionMapper transactionMapper;
 
@@ -59,13 +60,34 @@ public class WalletService {
 
     @Transactional
     public OperationResult deposit(UUID userId, UUID walletId, long amount, String idempotencyKey) {
-        WalletEntity wallet = lockOwnedWallet(userId, walletId);
-        long balanceAfter = wallet.credit(amount);
-        TransactionEntity tx = transactions.save(newTransaction(TransactionType.DEPOSIT, walletId, amount,
-                idempotencyKey).status(TransactionStatus.COMPLETED).build());
-        LedgerEntryEntity entry = ledger.save(LedgerEntryEntity.credit(tx, walletId, balanceAfter));
-        logApplied(tx, balanceAfter);
-        return result(tx, entry, walletId);
+        String fingerprint = RequestFingerprint.of("DEPOSIT", walletId, amount);
+        return idempotent(userId, idempotencyKey, fingerprint, walletId, () -> {
+            WalletEntity wallet = lockOwnedWallet(userId, walletId);
+            long balanceAfter = wallet.credit(amount);
+            TransactionEntity tx = transactions.save(newTransaction(TransactionType.DEPOSIT, walletId, amount,
+                    idempotencyKey).status(TransactionStatus.COMPLETED).build());
+            LedgerEntryEntity entry = ledger.save(LedgerEntryEntity.credit(tx, walletId, balanceAfter));
+            logApplied(tx, balanceAfter);
+            return result(tx, entry, walletId);
+        });
+    }
+
+    @Transactional
+    public OperationResult withdraw(UUID userId, UUID walletId, long amount, String idempotencyKey) {
+        String fingerprint = RequestFingerprint.of("WITHDRAWAL", walletId, amount);
+        return idempotent(userId, idempotencyKey, fingerprint, walletId, () -> {
+            WalletEntity wallet = lockOwnedWallet(userId, walletId);
+            TransactionEntity.TransactionEntityBuilder<?, ?> builder =
+                    newTransaction(TransactionType.WITHDRAWAL, walletId, amount, idempotencyKey);
+            if (!wallet.hasSufficientFunds(amount)) {
+                return reject(builder, wallet);
+            }
+            long balanceAfter = wallet.debit(amount);
+            TransactionEntity tx = transactions.save(builder.status(TransactionStatus.COMPLETED).build());
+            LedgerEntryEntity entry = ledger.save(LedgerEntryEntity.debit(tx, walletId, balanceAfter));
+            logApplied(tx, balanceAfter);
+            return result(tx, entry, walletId);
+        });
     }
 
     @Transactional
@@ -74,51 +96,41 @@ public class WalletService {
         if (sourceWalletId.equals(targetWalletId)) {
             throw new ApiException(ErrorCode.SAME_WALLET_TRANSFER);
         }
-        Map<UUID, WalletEntity> locked = wallets.findAllByIdForUpdate(List.of(sourceWalletId, targetWalletId))
-                .stream()
-                .collect(Collectors.toMap(WalletEntity::getId, Function.identity()));
-        WalletEntity source = locked.get(sourceWalletId);
-        if (source == null) {
-            throw new ApiException(ErrorCode.WALLET_NOT_FOUND);
+        if (idempotencyKey == null) {
+            throw new ApiException(ErrorCode.IDEMPOTENCY_KEY_REQUIRED);
         }
-        requireOwner(source, userId);
-        WalletEntity target = locked.get(targetWalletId);
-        if (target == null) {
-            throw new ApiException(ErrorCode.RECIPIENT_WALLET_NOT_FOUND);
-        }
-        if (!source.getCurrency().equals(target.getCurrency())) {
-            throw new ApiException(ErrorCode.CURRENCY_MISMATCH);
-        }
-        TransactionEntity.TransactionEntityBuilder<?, ?> builder =
-                newTransaction(TransactionType.TRANSFER, sourceWalletId, amount, idempotencyKey)
-                        .counterpartyWalletId(targetWalletId)
-                        .description(description);
-        if (!source.hasSufficientFunds(amount)) {
-            return reject(builder, source);
-        }
-        long sourceBalanceAfter = source.debit(amount);
-        long targetBalanceAfter = target.credit(amount);
-        TransactionEntity tx = transactions.save(builder.status(TransactionStatus.COMPLETED).build());
-        LedgerEntryEntity debit = ledger.save(LedgerEntryEntity.debit(tx, sourceWalletId, sourceBalanceAfter));
-        ledger.save(LedgerEntryEntity.credit(tx, targetWalletId, targetBalanceAfter));
-        logApplied(tx, sourceBalanceAfter);
-        return result(tx, debit, sourceWalletId);
-    }
-
-
-    @Transactional
-    public OperationResult withdraw(UUID userId, UUID walletId, long amount, String idempotencyKey) {
-        WalletEntity wallet = lockOwnedWallet(userId, walletId);
-        TransactionEntity.TransactionEntityBuilder<?, ?> builder =
-                newTransaction(TransactionType.WITHDRAWAL, walletId, amount, idempotencyKey);
-        if (!wallet.hasSufficientFunds(amount)) {
-            return reject(builder, wallet);
-        }
-        long balanceAfter = wallet.debit(amount);
-        TransactionEntity tx = transactions.save(builder.status(TransactionStatus.COMPLETED).build());
-        LedgerEntryEntity entry = ledger.save(LedgerEntryEntity.debit(tx, walletId, balanceAfter));
-        logApplied(tx, balanceAfter);
-        return result(tx, entry, walletId);
+        String fingerprint = RequestFingerprint.of("TRANSFER", sourceWalletId, targetWalletId, amount, description);
+        return idempotent(userId, idempotencyKey, fingerprint, sourceWalletId, () -> {
+            Map<UUID, WalletEntity> locked = wallets.findAllByIdForUpdate(List.of(sourceWalletId, targetWalletId))
+                    .stream()
+                    .collect(Collectors.toMap(WalletEntity::getId, Function.identity()));
+            WalletEntity source = locked.get(sourceWalletId);
+            if (source == null) {
+                throw new ApiException(ErrorCode.WALLET_NOT_FOUND);
+            }
+            requireOwner(source, userId);
+            WalletEntity target = locked.get(targetWalletId);
+            if (target == null) {
+                throw new ApiException(ErrorCode.RECIPIENT_WALLET_NOT_FOUND);
+            }
+            if (!source.getCurrency().equals(target.getCurrency())) {
+                throw new ApiException(ErrorCode.CURRENCY_MISMATCH);
+            }
+            TransactionEntity.TransactionEntityBuilder<?, ?> builder =
+                    newTransaction(TransactionType.TRANSFER, sourceWalletId, amount, idempotencyKey)
+                            .counterpartyWalletId(targetWalletId)
+                            .description(description);
+            if (!source.hasSufficientFunds(amount)) {
+                return reject(builder, source);
+            }
+            long sourceBalanceAfter = source.debit(amount);
+            long targetBalanceAfter = target.credit(amount);
+            TransactionEntity tx = transactions.save(builder.status(TransactionStatus.COMPLETED).build());
+            LedgerEntryEntity debit = ledger.save(LedgerEntryEntity.debit(tx, sourceWalletId, sourceBalanceAfter));
+            ledger.save(LedgerEntryEntity.credit(tx, targetWalletId, targetBalanceAfter));
+            logApplied(tx, sourceBalanceAfter);
+            return result(tx, debit, sourceWalletId);
+        });
     }
 
     @Transactional(readOnly = true)
@@ -138,6 +150,19 @@ public class WalletService {
         return new TransactionPageDto(dtos, hasMore ? items.getLast().getId() : null);
     }
 
+    private OperationResult idempotent(UUID userId, String idempotencyKey, String fingerprint, UUID walletId,
+                                       Supplier<OperationResult> action) {
+        Optional<UUID> previous = idempotency.claim(userId, idempotencyKey, fingerprint);
+        if (previous.isPresent()) {
+            TransactionEntity tx = transactions.findById(previous.get()).orElseThrow();
+            LedgerEntryEntity entry = ledger.findByTransactionIdAndWalletId(tx.getId(), walletId).orElse(null);
+            return new OperationResult(transactionMapper.toDto(tx, entry, walletId), true);
+        }
+        OperationResult result = action.get();
+        idempotency.complete(userId, idempotencyKey, result.getTransaction().getTransactionId());
+        return result;
+    }
+
     private TransactionEntity.TransactionEntityBuilder<?, ?> newTransaction(TransactionType type, UUID walletId,
                                                                             long amount, String idempotencyKey) {
         return TransactionEntity.builder()
@@ -146,6 +171,28 @@ public class WalletService {
                 .amount(amount)
                 .idempotencyKey(idempotencyKey)
                 .traceId(TraceId.current());
+    }
+
+    private OperationResult reject(TransactionEntity.TransactionEntityBuilder<?, ?> builder, WalletEntity wallet) {
+        TransactionEntity rejected = transactions.save(builder
+                .status(TransactionStatus.FAILED)
+                .failureReason(ErrorCode.INSUFFICIENT_FUNDS.name())
+                .build());
+        log.atWarn()
+                .setMessage("{} {} rejected: {}")
+                .addArgument(rejected.getType())
+                .addArgument(rejected.getId())
+                .addArgument(rejected.getFailureReason())
+                .addKeyValue("event.action", "transaction.rejected")
+                .addKeyValue("transaction.id", rejected.getId())
+                .addKeyValue("transaction.type", rejected.getType())
+                .addKeyValue("wallet.id", rejected.getWalletId())
+                .addKeyValue("amount", rejected.getAmount())
+                .addKeyValue("balance", wallet.getBalance())
+                .addKeyValue("failure_reason", rejected.getFailureReason())
+                .log();
+        logAfterCommit(rejected);
+        return result(rejected, null, wallet.getId());
     }
 
     private OperationResult result(TransactionEntity tx, LedgerEntryEntity entry, UUID walletId) {
@@ -194,6 +241,7 @@ public class WalletService {
         logAfterCommit(tx);
     }
 
+    /** Confirms in the log that the transaction (and its outbox event) is durably committed. */
     private static void logAfterCommit(TransactionEntity tx) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -209,27 +257,5 @@ public class WalletService {
                         .log();
             }
         });
-    }
-
-    private OperationResult reject(TransactionEntity.TransactionEntityBuilder<?, ?> builder, WalletEntity wallet) {
-        TransactionEntity rejected = transactions.save(builder
-                .status(TransactionStatus.FAILED)
-                .failureReason(ErrorCode.INSUFFICIENT_FUNDS.name())
-                .build());
-        log.atWarn()
-                .setMessage("{} {} rejected: {}")
-                .addArgument(rejected.getType())
-                .addArgument(rejected.getId())
-                .addArgument(rejected.getFailureReason())
-                .addKeyValue("event.action", "transaction.rejected")
-                .addKeyValue("transaction.id", rejected.getId())
-                .addKeyValue("transaction.type", rejected.getType())
-                .addKeyValue("wallet.id", rejected.getWalletId())
-                .addKeyValue("amount", rejected.getAmount())
-                .addKeyValue("balance", wallet.getBalance())
-                .addKeyValue("failure_reason", rejected.getFailureReason())
-                .log();
-        logAfterCommit(rejected);
-        return result(rejected, null, wallet.getId());
     }
 }
