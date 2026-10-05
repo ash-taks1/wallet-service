@@ -35,3 +35,17 @@ management:
     health:
       probes:
         enabled: true
+
+wallet:
+  currency: IRR
+  security:
+    jwt:
+      issuer: wallet-service
+      secret: ${JWT_SECRET:local-dev-secret-change-me-0123456789abcdef}
+      ttl: 15m
+
+springdoc:
+  swagger-ui:
+    # Keep the token after a page reload.
+    persist-authorization: true
+    tags-sorter: alpha
