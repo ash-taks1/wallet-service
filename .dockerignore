@@ -1,0 +1,7 @@
+target/
+.git/
+.idea/
+reports/
+k6/
+scripts/
+*.md

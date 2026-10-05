@@ -1,0 +1,78 @@
+name: digital-wallet
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: wallet-postgres
+    environment:
+      POSTGRES_DB: wallet
+      POSTGRES_USER: wallet
+      POSTGRES_PASSWORD: wallet
+    ports:
+      - "5440:5432"
+    volumes:
+      - wallet-pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wallet -d wallet"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: wallet-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: wallet
+      RABBITMQ_DEFAULT_PASS: wallet
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - wallet-rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: wallet-zipkin
+    ports:
+      - "9411:9411"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -Y off -qO- http://localhost:9411/health | grep -q UP"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  wallet-service:
+    build: .
+    image: wallet-service:local
+    container_name: wallet-service
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      RABBITMQ_HOST: rabbitmq
+      ZIPKIN_HOST: zipkin
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me-0123456789abcdef}
+    ports:
+      - "8090:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      zipkin:
+        condition: service_started
+    healthcheck:
+      # -Y off: never route the health probe through an HTTP proxy injected by the Docker client.
+      test: ["CMD-SHELL", "wget -Y off -qO- http://localhost:8090/actuator/health/readiness | grep -q UP"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+volumes:
+  wallet-pgdata:
+  wallet-rabbitmq:
