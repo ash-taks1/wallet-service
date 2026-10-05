@@ -1,0 +1,340 @@
+{
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdOutTTY": false,
+    "isStdErrTTY": false,
+    "testRunDurationMs": 210.641326
+  },
+  "metrics": {
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0,
+        "min": 0,
+        "med": 0
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 18.314063428571426,
+        "min": 1.77002,
+        "med": 14.251395,
+        "max": 53.075885,
+        "p(90)": 39.304019000000004,
+        "p(95)": 44.275026049999994
+      }
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 7324,
+        "rate": 34770.00519831517
+      }
+    },
+    "sender_transfers_in_history": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 1,
+        "max": 1
+      },
+      "thresholds": {
+        "value==1": {
+          "ok": true
+        }
+      }
+    },
+    "data_received": {
+      "values": {
+        "count": 10435,
+        "rate": 49539.1868165509
+      },
+      "type": "counter",
+      "contains": "data"
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 0.538724,
+        "p(90)": 0.38638120000000015,
+        "p(95)": 0.4648632,
+        "avg": 0.17069121428571427,
+        "min": 0.03728,
+        "med": 0.0801385
+      }
+    },
+    "invariants_hold": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 1,
+        "fails": 0
+      },
+      "thresholds": {
+        "rate==1": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "fails": 14,
+        "rate": 0,
+        "passes": 0
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 18.314063428571426,
+        "min": 1.77002,
+        "med": 14.251395,
+        "max": 53.075885,
+        "p(90)": 39.304019000000004,
+        "p(95)": 44.275026049999994
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 14.514693599999998,
+        "min": 12.303339,
+        "med": 14.628365,
+        "max": 15.572218,
+        "p(90)": 15.5561448,
+        "p(95)": 15.564181399999999
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 1.465113049999999,
+        "avg": 0.32724449999999994,
+        "min": 0.002398,
+        "med": 0.042087999999999993,
+        "max": 3.393184,
+        "p(90)": 0.3635406000000002
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 0.369332,
+        "p(90)": 0.22883900000000007,
+        "p(95)": 0.29084449999999995,
+        "avg": 0.08555514285714286,
+        "min": 0,
+        "med": 0.0231835
+      }
+    },
+    "receiver_final_balance": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 12345,
+        "min": 12345,
+        "max": 12345
+      },
+      "thresholds": {
+        "value==12345": {
+          "ok": true
+        }
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 5,
+        "rate": 23.737032494753667
+      }
+    },
+    "transfer_replayed": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 4,
+        "rate": 18.989625995802932
+      },
+      "thresholds": {
+        "count==4": {
+          "ok": true
+        }
+      }
+    },
+    "receiver_transfers_in_history": {
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 1,
+        "max": 1
+      },
+      "thresholds": {
+        "value==1": {
+          "ok": true
+        }
+      },
+      "type": "gauge"
+    },
+    "sender_final_balance": {
+      "values": {
+        "min": 37655,
+        "max": 37655,
+        "value": 37655
+      },
+      "thresholds": {
+        "value==37655": {
+          "ok": true
+        }
+      },
+      "type": "gauge",
+      "contains": "default"
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.035438928571428566,
+        "min": 0.009878,
+        "med": 0.014911500000000001,
+        "max": 0.239423,
+        "p(90)": 0.05153650000000004,
+        "p(95)": 0.12377954999999993
+      }
+    },
+    "http_req_waiting": {
+      "values": {
+        "p(95)": 44.101460349999996,
+        "avg": 18.107933285714285,
+        "min": 1.701803,
+        "med": 13.820862,
+        "max": 52.765883,
+        "p(90)": 39.2079735
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "transfer_applied": {
+      "thresholds": {
+        "count==1": {
+          "ok": true
+        }
+      },
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 1,
+        "rate": 4.747406498950733
+      }
+    },
+    "transfer_unexpected": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      },
+      "thresholds": {
+        "count==0": {
+          "ok": true
+        }
+      }
+    },
+    "checks": {
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 3,
+        "fails": 0
+      },
+      "type": "rate"
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 14,
+        "rate": 66.46369098531027
+      }
+    }
+  },
+  "setup_data": {
+    "key": "97296c95-085f-4c8e-95e6-ce7a88f9f9a9",
+    "receiver": {
+      "email": "dup-receiver-1791229658646-483940007@k6.example.com",
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ3YWxsZXQtc2VydmljZSIsInN1YiI6IjAxYTEwZDliLTg2M2EtN2ZhZi1hZWQ4LThlZWRhYzU1NDNiNiIsImVtYWlsIjoiZHVwLXJlY2VpdmVyLTE3OTEyMjk2NTg2NDYtNDgzOTQwMDA3QGs2LmV4YW1wbGUuY29tIiwianRpIjoiOTJjNDQxMTUtNDI5My00ZTc1LTgwZmQtNTFhNjkwZWM1ZmVmIiwiaWF0IjoxNzkxMjI5NjU4LCJleHAiOjE3OTEyMzA1NTh9.6Xl_bkFDk-oIQpzNvH_weSPs9vmTmNAlPow9flAPwDo",
+      "userId": "01a10d9b-863a-7faf-aed8-8eedac5543b6",
+      "walletId": "01a10d9b-863b-7a0b-909d-d94d049f6e1e"
+    },
+    "sender": {
+      "userId": "01a10d9b-85ec-70d8-9004-34ee2a308646",
+      "walletId": "01a10d9b-85ec-7e1e-93fc-e9351cd83679",
+      "email": "dup-sender-1791229658549-286535906@k6.example.com",
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ3YWxsZXQtc2VydmljZSIsInN1YiI6IjAxYTEwZDliLTg1ZWMtNzBkOC05MDA0LTM0ZWUyYTMwODY0NiIsImVtYWlsIjoiZHVwLXNlbmRlci0xNzkxMjI5NjU4NTQ5LTI4NjUzNTkwNkBrNi5leGFtcGxlLmNvbSIsImp0aSI6IjY4YzI5MmI3LWZmMTgtNDEyYS1hZGZiLTQyZjU4MjhjZjlmOSIsImlhdCI6MTc5MTIyOTY1OCwiZXhwIjoxNzkxMjMwNTU4fQ.9F6vOl_hv_9xuPluVn79UgPoK3rBrIOnk0EaEFR6qco"
+    }
+  },
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [
+      {
+        "id": "a8a9942382e8ffe2e56ef29e664b8229",
+        "groups": [],
+        "checks": [
+            {
+              "path": "::teardown::sender and receiver see the same single transaction",
+              "id": "ef1c4e04957d9061108c256fc76d63bc",
+              "passes": 1,
+              "fails": 0,
+              "name": "sender and receiver see the same single transaction"
+            },
+            {
+              "id": "e948644043059abc6568204ad8fda41c",
+              "passes": 1,
+              "fails": 0,
+              "name": "sender entry is a DEBIT of the amount",
+              "path": "::teardown::sender entry is a DEBIT of the amount"
+            },
+            {
+              "name": "receiver entry is a CREDIT of the amount",
+              "path": "::teardown::receiver entry is a CREDIT of the amount",
+              "id": "20270dcab6f969688e353f7d406a5b7d",
+              "passes": 1,
+              "fails": 0
+            }
+          ],
+        "name": "teardown",
+        "path": "::teardown"
+      }
+    ],
+    "checks": []
+  }
+}

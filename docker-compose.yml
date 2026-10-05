@@ -1,5 +1,14 @@
 name: digital-wallet
 
+# One command brings up the whole service with its infrastructure:
+#   docker compose up -d --build
+#
+# PostgreSQL and RabbitMQ are shared with the separate wallet-event-consumer service: it joins this
+# stack's network "digital-wallet" and uses its own database "consumer" on the same PostgreSQL server.
+#
+# Logs: both services log JSON to stdout -> Filebeat ships them to Elasticsearch -> search them in
+# Kibana (http://localhost:5602, saved search "Wallet trace", query  traceId : "<id>").
+
 services:
   postgres:
     image: postgres:18-alpine
@@ -12,6 +21,7 @@ services:
       - "5440:5432"
     volumes:
       - wallet-pgdata:/var/lib/postgresql
+      - ./infra/postgres/create-consumer-db.sql:/docker-entrypoint-initdb.d/create-consumer-db.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wallet -d wallet"]
       interval: 3s
@@ -35,17 +45,6 @@ services:
       timeout: 5s
       retries: 20
 
-  zipkin:
-    image: openzipkin/zipkin:latest
-    container_name: wallet-zipkin
-    ports:
-      - "9411:9411"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -Y off -qO- http://localhost:9411/health | grep -q UP"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
   wallet-service:
     build: .
     image: wallet-service:local
@@ -54,7 +53,6 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       RABBITMQ_HOST: rabbitmq
-      ZIPKIN_HOST: zipkin
       JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me-0123456789abcdef}
     ports:
       - "8090:8090"
@@ -63,8 +61,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      zipkin:
-        condition: service_started
     healthcheck:
       # -Y off: never route the health probe through an HTTP proxy injected by the Docker client.
       test: ["CMD-SHELL", "wget -Y off -qO- http://localhost:8090/actuator/health/readiness | grep -q UP"]
@@ -73,6 +69,82 @@ services:
       retries: 30
       start_period: 10s
 
+  # ---------------- logs: Elasticsearch + Kibana + Filebeat (same 8.18.1 images as other local projects) ----------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.1
+    container_name: wallet-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      # Dev laptops are often >95% full; without this Elasticsearch silently blocks writes.
+      cluster.routing.allocation.disk.threshold_enabled: "false"
+    ports:
+      - "9201:9200"
+    volumes:
+      - wallet-es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s' > /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 18
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.18.1
+    container_name: wallet-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      TELEMETRY_OPTIN: "false"
+      TELEMETRY_BANNER: "false"
+    ports:
+      - "5602:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:5601/api/status | grep -q '\"level\":\"available\"'"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+
+  # Reads the Docker logs of wallet-service and wallet-event-consumer (see infra/filebeat/filebeat.yml).
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.18.1
+    container_name: wallet-filebeat
+    user: root
+    command: ["filebeat", "-e", "--strict.perms=false"]
+    environment:
+      NO_PROXY: "*"
+      no_proxy: "*"
+    volumes:
+      - ./infra/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # One-shot: creates the "Wallet logs" data view and the "Wallet trace" saved search in Kibana, then exits.
+  kibana-setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.1   # only used for its curl
+    container_name: wallet-kibana-setup
+    restart: "no"
+    environment:
+      NO_PROXY: "*"
+      no_proxy: "*"
+    depends_on:
+      kibana:
+        condition: service_healthy
+    volumes:
+      - ./infra/kibana/setup.sh:/setup.sh:ro
+    entrypoint: ["sh", "/setup.sh"]
+
+networks:
+  default:
+    # Fixed name so wallet-event-consumer (another compose project) can join it.
+    name: digital-wallet
+
 volumes:
   wallet-pgdata:
   wallet-rabbitmq:
+  wallet-es-data:

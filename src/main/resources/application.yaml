@@ -8,9 +8,8 @@ spring:
     hikari:
       maximum-pool-size: 20
       connection-timeout: 10000
-  sql:
-    init:
-      mode: always
+      # Fail fast instead of queueing forever behind a stuck row lock.
+      connection-init-sql: SET lock_timeout = '10s'
   jpa:
     open-in-view: false
     hibernate:
@@ -30,6 +29,9 @@ spring:
     publisher-returns: true
     template:
       mandatory: true
+
+server:
+  port: 8090
 
 logging:
   structured:

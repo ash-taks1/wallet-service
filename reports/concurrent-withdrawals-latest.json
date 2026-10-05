@@ -1,0 +1,380 @@
+{
+  "metrics": {
+    "observed_balance": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "avg": 2050,
+        "min": 1000,
+        "med": 1000,
+        "max": 100000,
+        "p(90)": 1000,
+        "p(95)": 1000
+      }
+    },
+    "invariants_hold": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 1,
+        "fails": 0
+      },
+      "thresholds": {
+        "rate==1": {
+          "ok": true
+        }
+      }
+    },
+    "history_completed_withdrawals": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 33,
+        "min": 33,
+        "max": 33
+      }
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 5,
+        "fails": 0
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 156,
+        "rate": 92.13544677999559
+      }
+    },
+    "history_failed_withdrawals": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 17,
+        "min": 17,
+        "max": 17
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 275.14216925,
+        "avg": 61.89903213461541,
+        "min": 1.800783,
+        "med": 5.10238,
+        "max": 312.12961,
+        "p(90)": 233.0974845
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 0,
+        "max": 8.714009,
+        "p(90)": 0.355283,
+        "p(95)": 0.4552275,
+        "avg": 0.1455726987179487
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "data_received": {
+      "values": {
+        "count": 119737,
+        "rate": 70718.08968651496
+      },
+      "type": "counter",
+      "contains": "data"
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 208.86495605882357,
+        "min": 14.105759,
+        "med": 180.863957,
+        "max": 1597.209204,
+        "p(90)": 296.224459,
+        "p(95)": 305.425139
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 51,
+        "rate": 30.12120375499856
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(90)": 0.554208,
+        "p(95)": 0.9588715,
+        "avg": 0.22801970512820516,
+        "min": 0.020799,
+        "med": 0.0808555,
+        "max": 2.887437
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.10897435897435898,
+        "passes": 17,
+        "fails": 139
+      }
+    },
+    "withdrawals_succeeded": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 33,
+        "rate": 19.49019066499907
+      },
+      "thresholds": {
+        "count==33": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 0.509119,
+        "avg": 0.16405396153846175,
+        "min": 0.002408,
+        "med": 0.007375,
+        "max": 8.749507,
+        "p(90)": 0.396851
+      }
+    },
+    "http_req_sending": {
+      "values": {
+        "max": 1.428916,
+        "p(90)": 0.13720949999999998,
+        "p(95)": 0.1583975,
+        "avg": 0.07022076923076921,
+        "min": 0.006171,
+        "med": 0.021005
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "final_balance": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1000,
+        "min": 1000,
+        "max": 1000
+      },
+      "thresholds": {
+        "value==1000": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 61.6007916602564,
+        "min": 1.738769,
+        "med": 4.947182,
+        "max": 311.542754,
+        "p(90)": 232.1437025,
+        "p(95)": 274.76093125
+      }
+    },
+    "balance_negative_observations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      },
+      "thresholds": {
+        "count==0": {
+          "ok": true
+        }
+      }
+    },
+    "history_completed_withdrawals_total": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "max": 99000,
+        "value": 99000,
+        "min": 99000
+      },
+      "thresholds": {
+        "value==99000": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 3.838303,
+        "max": 220.952651,
+        "p(90)": 150.3525696,
+        "p(95)": 187.57324579999997,
+        "avg": 36.1363793884892,
+        "min": 1.800783
+      }
+    },
+    "vus": {
+      "contains": "default",
+      "values": {
+        "max": 1,
+        "value": 1,
+        "min": 1
+      },
+      "type": "gauge"
+    },
+    "vus_max": {
+      "values": {
+        "value": 51,
+        "min": 51,
+        "max": 51
+      },
+      "type": "gauge",
+      "contains": "default"
+    },
+    "withdrawals_unexpected": {
+      "contains": "default",
+      "values": {
+        "count": 0,
+        "rate": 0
+      },
+      "thresholds": {
+        "count==0": {
+          "ok": true
+        }
+      },
+      "type": "counter"
+    },
+    "withdrawals_rejected_insufficient_funds": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 17,
+        "rate": 10.040401251666186
+      },
+      "thresholds": {
+        "count==17": {
+          "ok": true
+        }
+      }
+    },
+    "data_sent": {
+      "values": {
+        "count": 85857,
+        "rate": 50708.16060378258
+      },
+      "type": "counter",
+      "contains": "data"
+    }
+  },
+  "setup_data": {
+    "user": {
+      "email": "concurrency-1791229655490-54538593@k6.example.com",
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ3YWxsZXQtc2VydmljZSIsInN1YiI6IjAxYTEwZDliLTc5ZTMtNzM0OC04MTQ5LWE2ODMyNDM5YmU2YiIsImVtYWlsIjoiY29uY3VycmVuY3ktMTc5MTIyOTY1NTQ5MC01NDUzODU5M0BrNi5leGFtcGxlLmNvbSIsImp0aSI6ImFmYmE2NGM4LTExOTQtNDBhMy05NzVjLWY4MGRjZmQwNmFkOCIsImlhdCI6MTc5MTIyOTY1NSwiZXhwIjoxNzkxMjMwNTU1fQ.uDoSJjNELbNiiY3PMvUwQ0I1e6fnxFpolh48vRFy7ww",
+      "userId": "01a10d9b-79e3-7348-8149-a6832439be6b",
+      "walletId": "01a10d9b-79e3-7e54-9d7d-4c2d4a21942e"
+    }
+  },
+  "root_group": {
+    "groups": [
+      {
+        "name": "teardown",
+        "path": "::teardown",
+        "id": "a8a9942382e8ffe2e56ef29e664b8229",
+        "groups": [],
+        "checks": [
+            {
+              "path": "::teardown::transaction log: 33 completed withdrawals",
+              "id": "54fac3128276280036bc4c67800772ad",
+              "passes": 1,
+              "fails": 0,
+              "name": "transaction log: 33 completed withdrawals"
+            },
+            {
+              "passes": 1,
+              "fails": 0,
+              "name": "transaction log: 17 failed withdrawals (INSUFFICIENT_FUNDS)",
+              "path": "::teardown::transaction log: 17 failed withdrawals (INSUFFICIENT_FUNDS)",
+              "id": "6ea7660dafdc3490fcce0735e5e33f0f"
+            },
+            {
+              "path": "::teardown::initial - logged withdrawals == final balance",
+              "id": "216b6c7ea5880b12a4cd5edd57d284f5",
+              "passes": 1,
+              "fails": 0,
+              "name": "initial - logged withdrawals == final balance"
+            },
+            {
+              "passes": 1,
+              "fails": 0,
+              "name": "every ledger balance_after >= 0",
+              "path": "::teardown::every ledger balance_after >= 0",
+              "id": "7dd64f83278c906f035493909d54679b"
+            },
+            {
+              "name": "ledger balances strictly decreasing by 3,000",
+              "path": "::teardown::ledger balances strictly decreasing by 3,000",
+              "id": "ca4bb0c497e563f795f0042aa8f766e7",
+              "passes": 1,
+              "fails": 0
+            }
+          ]
+      }
+    ],
+    "checks": [],
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "options": {
+    "summaryTimeUnit": "",
+    "noColor": false,
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ]
+  },
+  "state": {
+    "isStdOutTTY": false,
+    "isStdErrTTY": false,
+    "testRunDurationMs": 1693.159424
+  }
+}

@@ -1,0 +1,35 @@
+# Ships the logs of both services to Elasticsearch.
+#
+# The services write one JSON (ECS) object per line to stdout; Docker stores that in
+# /var/lib/docker/containers/<id>/<id>-json.log. Filebeat watches Docker, picks the two service
+# containers by name, parses each line as JSON (so traceId, message, log.level... become real fields)
+# and sends it to Elasticsearch. Kibana then searches it, e.g.  traceId : "<id>".
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - condition:
+            or:
+              - equals.docker.container.name: wallet-service
+              - equals.docker.container.name: wallet-event-consumer
+          config:
+            - type: filestream
+              id: wallet-${data.docker.container.id}
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              parsers:
+                # 1) unwrap Docker's json-file line  2) parse the application's own JSON log line
+                - container: ~
+                - ndjson:
+                    target: ""
+                    overwrite_keys: true
+                    expand_keys: true
+                    add_error_key: true
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  # Docker may inject the host's proxy into containers; never use it for Elasticsearch.
+  proxy_disable: true
+
+logging.level: warning
